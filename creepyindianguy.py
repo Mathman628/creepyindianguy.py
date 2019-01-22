@@ -60,20 +60,9 @@ async def on_message(message):
     print(f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
     await client.process_commands(message)
 
-    if message.content.lower() == "indianguy.logout":
+    if message.content.lower() == "bob.logout":
         await client.close()
 
-    with open('users.json', 'r') as f:
-        users = json.load(f)
-    
-    await update_data(users, message.author)
-    await add_experience(users, message.author, 5)
-    await level_up(users, message.author, message.channel)
-
-    with open('users.json', 'w') as f:
-        json.dump(users, f)
-
-    await client.process_commands(message)
 
 #We need a way to allow and disallow reactions by the user (perhaps a command that switches it on and off)
 
@@ -104,6 +93,20 @@ async def on_member_join(member):
     with open('users.json', 'w') as f:
         json.dump(users, f)
 
+@client.event
+async def on_message(message):
+    with open('users.json', 'r') as f:
+        users = json.load(f)
+    
+    await update_data(users, message.author)
+    await add_experience(users, message.author, 5)
+    await level_up(users, message.author, message.channel)
+
+    with open('users.json', 'w') as f:
+        json.dump(users, f)
+
+    await client.process_commands(message)
+
 async def update_data(users, user):
     if not user.id in users:
         users[user.id] = {}
@@ -123,15 +126,15 @@ async def level_up(users, user, channel):
         users[user.id]['level'] = lvl_end
 
 #We don't really need this on-delete functionality if we have logger, unless we can replace it. Still useful in general.
-@client.event
-async def on_message_delete(message):
-    await client.send_message(message.channel, f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
-    await client.process_commands(message)
+#@client.event
+# sync def on_message_delete(message):
+    #await client.send_message(message.channel, f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
+    #await client.process_commands(message)
 
 #MISSING PERMISSIONS ERROR @client.event
-async def on_member_join(member):
-    role = discord.utils.get(member.server.roles, name='W1GG3R5')
-    await client.add_roles(member, role)
+#async def on_member_join(member):
+    #role = discord.utils.get(member.server.roles, name='W1GG3R5')
+    #await client.add_roles(member, role)
 
 #Help command
 @client.command(pass_contenxt=True)
@@ -231,9 +234,9 @@ async def queue(ctx, url):
     await client.say('Video queued. I hope you send bobs.')
 
 #Member count
-@client.command(pass_context=True)
-async def member_count():
-        await client.say(f"{mhs_guild.member_count}")
+@client.command()
+async def member_count(message):
+        message.channel.send(f"{mhs_server.member_count}")
 
 
 #For the status cycler
